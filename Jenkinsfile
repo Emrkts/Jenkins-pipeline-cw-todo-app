@@ -21,7 +21,8 @@ pipeline{
                 sh 'terraform apply --auto-approve'
             }
         }
-        stage('Create ECR Repo') {
+
+       stage('Create ECR Repo') {
             steps {
                 echo 'Creating ECR Repo for App'
                 sh '''
@@ -34,6 +35,7 @@ pipeline{
                 '''
             }
         }
+
         stage('Build App Docker Image') {
             steps {
                 echo 'Building App Image'
@@ -57,6 +59,7 @@ pipeline{
                 sh 'docker image ls'
             }
         }
+
         stage('Push Image to ECR Repo') {
             steps {
                 echo 'Pushing App Image to ECR Repo'
@@ -66,6 +69,7 @@ pipeline{
                 sh 'docker push "$ECR_REGISTRY/$APP_REPO_NAME:react"'
             }
         }
+
         stage('wait the instance') {
             steps {
                 script {
@@ -75,6 +79,7 @@ pipeline{
                 }
             }
         }
+
         stage('Deploy the App') {
             steps {
                 echo 'Deploy the App'
@@ -84,6 +89,7 @@ pipeline{
                 ansiblePlaybook credentialsId: 'firstkey', disableHostKeyChecking: true, installation: 'ansible', inventory: 'inventory_aws_ec2.yml', playbook: 'docker_project.yml'
              }
         }
+
         stage('Destroy the infrastructure'){
             steps{
                 timeout(time:5, unit:'DAYS'){
@@ -106,13 +112,6 @@ pipeline{
             echo 'Deleting all local images'
             sh 'docker image prune -af'
         }
-
-        // success {
-        //      script {
-        //      slackSend channel: '#class-chat', color: ' #439FE0', message: 'cw-todo-app is ready and pipeline passed succesfully', teamDomain: 'devops15tr', tokenCredentialId: 'jenkins-slack'
-        //         }
-        //  }
-
 
         failure {
 
